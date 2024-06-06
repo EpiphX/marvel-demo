@@ -37,6 +37,7 @@ class ComicsResourceImpl(private val httpClient: HttpClient) : ComicsResource {
         @Serializable
         internal data class ComicResultsDTO(
             val title: String?,
+            val description: String?,
             val textObjects: List<TextObjects>?,
             val thumbnail: ImageObject?
         )
@@ -67,11 +68,14 @@ class ComicsResourceImpl(private val httpClient: HttpClient) : ComicsResource {
             Image(extension, path)
         }
 
+        val description = firstComicResult?.description?.takeIf { it.isNotEmpty() }
+            ?: firstComicResult?.textObjects?.firstOrNull()?.text
+            ?: "No comic description found."
+
         Comic(
             id = comicId,
             title = requireNotNull(firstComicResult?.title) { "title should not be null." },
-            description = firstComicResult?.textObjects?.firstOrNull()?.text
-                ?: "No comic description found.",
+            description = description,
             thumbnail = image
         )
     }

@@ -16,16 +16,20 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.LightMode
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.chris.marvel.ui.comics.ComicDetailScreen
@@ -42,6 +46,13 @@ class MainActivity : ComponentActivity() {
             // Default will be based on the system settings.
             val isDarkTheme = rememberSaveable {
                 mutableStateOf(isSystemInDarkMode)
+            }
+
+            val showComicDetailScreen = rememberSaveable {
+                mutableStateOf(false)
+            }
+            val comicId = rememberSaveable {
+                mutableStateOf("47800")
             }
 
             LaunchedEffect(key1 = isDarkTheme.value) {
@@ -71,12 +82,14 @@ class MainActivity : ComponentActivity() {
                                     tint = MaterialTheme.colorScheme.surface
                                 )
                             }
-                            IconButton(onClick = { /*TODO, update navigation logic to close. */ }) {
-                                Icon(
-                                    imageVector = Icons.Default.Close,
-                                    contentDescription = stringResource(R.string.close),
-                                    tint = MaterialTheme.colorScheme.surface
-                                )
+                            if (showComicDetailScreen.value) {
+                                IconButton(onClick = { showComicDetailScreen.value = false }) {
+                                    Icon(
+                                        imageVector = Icons.Default.Close,
+                                        contentDescription = stringResource(R.string.close),
+                                        tint = MaterialTheme.colorScheme.surface
+                                    )
+                                }
                             }
                         }
                     )
@@ -84,9 +97,32 @@ class MainActivity : ComponentActivity() {
                     Box(
                         Modifier.padding(innerPadding)
                     ) {
-                        Column(verticalArrangement = Arrangement.Top) {
-                            ComicDetailScreen(comicId = "47800")
+                        // This transition could be improved by bringing in jetpack navigation and setting up routes.
+                        if (showComicDetailScreen.value) {
+                            Column(verticalArrangement = Arrangement.Top) {
+                                ComicDetailScreen(comicId = comicId.value)
+                            }
+                        } else {
+                            Column(
+                                verticalArrangement = Arrangement.Center,
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                TextField(label = {
+                                    Text(stringResource(R.string.comic_id_label))
+                                }, value = comicId.value, onValueChange = {
+                                    comicId.value = it
+                                })
+                                Button(
+                                    onClick = { showComicDetailScreen.value = true },
+                                    enabled = comicId.value.isNotEmpty()
+                                ) {
+                                    Text(stringResource(R.string.submit))
+                                }
+
+                            }
                         }
+
                     }
                 }
             }

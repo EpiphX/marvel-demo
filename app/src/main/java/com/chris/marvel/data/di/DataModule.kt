@@ -1,10 +1,11 @@
-package com.chris.marvel.di
+package com.chris.marvel.data.di
 
 import com.chris.api.MarvelSDK
 import com.chris.api.MarvelSDKApi
 import com.chris.marvel.BuildConfig
-import com.chris.marvel.data.ComicsRepository
-import com.chris.marvel.data.ComicsRepositoryImpl
+import com.chris.marvel.data.comics.ComicsRepository
+import com.chris.marvel.data.comics.ComicsRepositoryImpl
+import com.chris.marvel.data.storage.AppDatabase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -19,7 +20,10 @@ class DataModule {
     }
 
     @Provides
-    fun provideComicsRepository(marvelSDKApi: MarvelSDKApi): ComicsRepository {
-        return ComicsRepositoryImpl(marvelSDKApi)
+    fun provideComicsRepository(
+        marvelSDKApi: MarvelSDKApi,
+        appDatabase: AppDatabase
+    ): ComicsRepository {
+        return ComicsRepositoryImpl(marvelSDKApi, appDatabase)
     }
 }

@@ -11,7 +11,6 @@ import kotlinx.serialization.Serializable
  * The Comics Resource supports endpoints for the marvel comics resource definition:
  *
  * Currently supports the following endpoints:
- * [Fetch Comics](https://developer.marvel.com/docs#!/public/getComicsCollection_get_6)
  * [Fetch Comic](https://developer.marvel.com/docs#!/public/getComicIndividual_get_7)
  */
 interface ComicsResource {
@@ -69,6 +68,7 @@ class ComicsResourceImpl(private val httpClient: HttpClient) : ComicsResource {
         }
 
         Comic(
+            id = comicId,
             title = requireNotNull(firstComicResult?.title) { "title should not be null." },
             description = firstComicResult?.textObjects?.firstOrNull()?.text
                 ?: "No comic description found.",

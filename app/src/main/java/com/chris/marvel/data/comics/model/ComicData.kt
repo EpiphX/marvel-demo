@@ -1,6 +1,7 @@
-package com.chris.marvel.data.model
+package com.chris.marvel.data.comics.model
 
-data class ComicEntity(
+data class ComicData(
+    val id: String,
     val title: String,
     val description: String,
     val thumbnailUrl: String?

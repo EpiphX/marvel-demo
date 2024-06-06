@@ -1,4 +1,16 @@
 <resources>
     <string name="app_name">marvel</string>
     <string name="retry">Retry</string>
+    <string name="the_story">The Story</string>
+    <string name="marvel_attribution_legal">Data provided by Marvel. © 2014 Marvel</string>
+    <string name="previous">PREVIOUS</string>
+    <string name="next">NEXT</string>
+    <string name="read_offline">READ OFFLINE</string>
+    <string name="add_to_library">ADD TO LIBRARY</string>
+    <string name="mark_as_read">MARK AS READ</string>
+    <string name="read_now">READ NOW</string>
+    <string name="failure_retry_message">A failure has seemed to occur. Please Retry</string>
+    <string name="close">Close</string>
+    <string name="change_theme">Change Theme</string>
+    <string name="loader">loader</string>
 </resources>

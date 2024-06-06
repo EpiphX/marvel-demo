@@ -82,7 +82,7 @@ fun LeftActionButton() {
         enabled = false,
         contentPadding = PaddingValues(0.dp),
         info = DirectionalButtonInfo(
-            ImagePosition.LEFT,
+            LEFT,
             Icons.Filled.KeyboardArrowLeft,
             "PREVIOUS"
         ),
@@ -100,7 +100,7 @@ fun RightActionButton() {
         enabled = true,
         contentPadding = PaddingValues(0.dp),
         info = DirectionalButtonInfo(
-            ImagePosition.RIGHT,
+            RIGHT,
             Icons.Filled.KeyboardArrowRight,
             "NEXT"
         ),

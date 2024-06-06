@@ -68,8 +68,8 @@ android {
 }
 
 dependencies {
+    // Our internal Marvel SDK API Module
     implementation(project(":api"))
-
     // External Dependencies
     // Image Loading Library
     implementation(libs.coil.compose)
@@ -78,6 +78,15 @@ dependencies {
     // Dependency Injection
     implementation(libs.hilt.android)
     kapt(libs.hilt.android.compiler)
+
+    // Storage for Offline Support
+    implementation(libs.androidx.room.runtime)
+    annotationProcessor(libs.androidx.room.compiler)
+    // To use Kotlin annotation processing tool (kapt)
+    //noinspection KaptUsageInsteadOfKsp, Not enabling KSP for this demo.
+    kapt(libs.androidx.room.compiler)
+    // Room Coroutines
+    implementation(libs.androidx.room.ktx)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -91,7 +100,6 @@ dependencies {
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)

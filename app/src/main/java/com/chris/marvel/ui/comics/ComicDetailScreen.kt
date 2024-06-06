@@ -1,5 +1,6 @@
 package com.chris.marvel.ui.comics
 
+import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,8 +33,11 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.chris.marvel.R
@@ -57,22 +61,56 @@ fun ComicDetailScreen(
         detailViewModel.loadData(comicId)
     }
 
-    when (val detailScreenState = uiState) {
+    ComicDetailContent(
+        comicId = comicId,
+        comicDetailUiState = uiState,
+        readNowAction = { },
+        markAsReadAction = { },
+        addToLibraryAction = { },
+        downloadAction = { },
+        onPreviousAction = { },
+        onNextAction = { },
+        reloadData = detailViewModel::loadData
+    )
+}
+
+@Composable
+fun ComicDetailContent(
+    comicId: String,
+    comicDetailUiState: ComicDetailUiState,
+    readNowAction: (String) -> Unit,
+    markAsReadAction: (String) -> Unit,
+    addToLibraryAction: (String) -> Unit,
+    downloadAction: (String) -> Unit,
+    onPreviousAction: (String) -> Unit,
+    onNextAction: (String) -> Unit,
+    reloadData: (String) -> Unit
+) {
+    when (comicDetailUiState) {
         is ComicDetailUiState.ComicInfoRetrieved -> {
-            ComicDetailContent(comicInfo = detailScreenState.comicInfo)
+            ComicInfoDisplay(
+                comicDetailUiState,
+                readNowAction,
+                comicId,
+                markAsReadAction,
+                addToLibraryAction,
+                downloadAction,
+                onPreviousAction,
+                onNextAction
+            )
         }
 
         ComicDetailUiState.Loading -> {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
+                CircularProgressIndicator(modifier = Modifier.testTag(stringResource(R.string.loader)))
             }
         }
 
         ComicDetailUiState.Error -> {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(text = "A failure has seemed to occur. Please Retry")
-                    Button(onClick = { detailViewModel.loadData(comicId) }) {
+                    Text(text = stringResource(R.string.failure_retry_message))
+                    Button(onClick = { reloadData(comicId) }) {
                         Text(text = stringResource(R.string.retry))
                     }
                 }
@@ -83,28 +121,69 @@ fun ComicDetailScreen(
 }
 
 @Composable
-fun ComicDetailContent(comicInfo: ComicInfo) {
-    // TODO: Need to look into fixing landscape mode orientation for Comic book view.
-    // TODO: Need to look into writing unit and UI test. (Mock Data implementation will be used instead, so the test does not halt).
-    Column(
+private fun ComicInfoDisplay(
+    comicDetailUiState: ComicDetailUiState.ComicInfoRetrieved,
+    readNowAction: (String) -> Unit,
+    comicId: String,
+    markAsReadAction: (String) -> Unit,
+    readOfflineAction: (String) -> Unit,
+    downloadAction: (String) -> Unit,
+    onPreviousAction: (String) -> Unit,
+    onNextAction: (String) -> Unit
+) {
+    val comicInfo = comicDetailUiState.comicInfo
+    val portrait = LocalConfiguration.current.orientation == Configuration.ORIENTATION_PORTRAIT
+    if (portrait) {
+        ComicInfoDisplayPortrait(
+            comicInfo,
+            readNowAction,
+            comicId,
+            markAsReadAction,
+            readOfflineAction,
+            downloadAction,
+            onPreviousAction,
+            onNextAction
+        )
+    } else {
+        ComicInfoDisplayLandscape(
+            comicInfo,
+            readNowAction,
+            comicId,
+            markAsReadAction,
+            readOfflineAction,
+            downloadAction,
+            onPreviousAction,
+            onNextAction
+        )
+    }
+}
+
+@Composable
+private fun ComicInfoDisplayLandscape(
+    comicInfo: ComicInfo,
+    readNowAction: (String) -> Unit,
+    comicId: String,
+    markAsReadAction: (String) -> Unit,
+    readOfflineAction: (String) -> Unit,
+    downloadAction: (String) -> Unit,
+    onPreviousAction: (String) -> Unit,
+    onNextAction: (String) -> Unit
+) {
+    Row(
         modifier = Modifier.fillMaxHeight(),
-        verticalArrangement = Arrangement.SpaceBetween
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
         CoverImageActions(comicInfo.comicBookImageUrl) {
             Button(
-                onClick = {
-                    /**
-                     * TODO: Implement event for read on view model.
-                     */
-                },
+                onClick = { readNowAction(comicId) },
                 modifier = Modifier
-                    .height(76.dp)
-                    .fillMaxWidth(),
+                    .fillMaxWidth()
+                    .weight(1f, fill = true),
                 shape = AbsoluteCutCornerShape(0.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
             ) {
                 Text(
-                    text = "READ NOW",
+                    text = stringResource(R.string.read_now),
                     fontWeight = FontWeight.ExtraBold,
                     style = MaterialTheme.typography.titleLarge
                 )
@@ -112,27 +191,151 @@ fun ComicDetailContent(comicInfo: ComicInfo) {
             ActionButton(
                 info = ActionButtonInfo(
                     Icons.Filled.CheckCircle,
-                    "MARK AS READ"
+                    stringResource(R.string.mark_as_read)
                 ),
-                onClick = { /* Not needed for preview */ },
+                onClick = { markAsReadAction(comicId) },
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
                 modifier = Modifier.fillMaxWidth()
             )
             ActionButton(
                 info = ActionButtonInfo(
                     Icons.Filled.AddCircle,
-                    "ADD TO LIBRARY"
+                    stringResource(R.string.add_to_library)
                 ),
-                onClick = { /* Not needed for preview */ },
+                onClick = { readOfflineAction(comicId) },
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
                 modifier = Modifier.fillMaxWidth()
             )
             ActionButton(
                 info = ActionButtonInfo(
                     Icons.Filled.Download,
-                    "READ OFFLINE"
+                    stringResource(R.string.read_offline)
                 ),
-                onClick = { /* Not needed for preview */ },
+                onClick = { downloadAction(comicId) },
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+
+        Column(
+            modifier = Modifier.fillMaxHeight(),
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 8.dp, vertical = 16.dp).weight(1f),
+                verticalArrangement = Arrangement.Top
+            ) {
+                Text(
+                    text = comicInfo.comicTitle,
+                    style = MaterialTheme.typography.titleLarge
+                )
+                Divider(modifier = Modifier.padding(vertical = 16.dp))
+                Text(
+                    text = stringResource(R.string.the_story),
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = comicInfo.description,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = stringResource(R.string.marvel_attribution_legal),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                DirectionalButton(
+                    enabled = false,
+                    contentPadding = PaddingValues(0.dp),
+                    info = DirectionalButtonInfo(
+                        ImagePosition.LEFT,
+                        Icons.Filled.KeyboardArrowLeft,
+                        stringResource(R.string.previous)
+                    ),
+                    onClick = {
+                        onPreviousAction(comicId)
+                    }
+                )
+                DirectionalButton(
+                    enabled = true,
+                    contentPadding = PaddingValues(0.dp),
+                    info = DirectionalButtonInfo(
+                        ImagePosition.RIGHT,
+                        Icons.Filled.KeyboardArrowRight,
+                        stringResource(R.string.next)
+                    ),
+                    onClick = {
+                        onNextAction(comicId)
+                    }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ComicInfoDisplayPortrait(
+    comicInfo: ComicInfo,
+    readNowAction: (String) -> Unit,
+    comicId: String,
+    markAsReadAction: (String) -> Unit,
+    readOfflineAction: (String) -> Unit,
+    downloadAction: (String) -> Unit,
+    onPreviousAction: (String) -> Unit,
+    onNextAction: (String) -> Unit
+) {
+    Column(
+        modifier = Modifier.fillMaxHeight(),
+        verticalArrangement = Arrangement.SpaceBetween
+    ) {
+        CoverImageActions(comicInfo.comicBookImageUrl) {
+            Button(
+                onClick = { readNowAction(comicId) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f, fill = true),
+                shape = AbsoluteCutCornerShape(0.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+            ) {
+                Text(
+                    text = stringResource(R.string.read_now),
+                    fontWeight = FontWeight.ExtraBold,
+                    style = MaterialTheme.typography.titleLarge
+                )
+            }
+            ActionButton(
+                info = ActionButtonInfo(
+                    Icons.Filled.CheckCircle,
+                    stringResource(R.string.mark_as_read)
+                ),
+                onClick = { markAsReadAction(comicId) },
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
+                modifier = Modifier.fillMaxWidth()
+            )
+            ActionButton(
+                info = ActionButtonInfo(
+                    Icons.Filled.AddCircle,
+                    stringResource(R.string.add_to_library)
+                ),
+                onClick = { readOfflineAction(comicId) },
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
+                modifier = Modifier.fillMaxWidth()
+            )
+            ActionButton(
+                info = ActionButtonInfo(
+                    Icons.Filled.Download,
+                    stringResource(R.string.read_offline)
+                ),
+                onClick = { downloadAction(comicId) },
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
                 modifier = Modifier.fillMaxWidth()
             )
@@ -142,14 +345,18 @@ fun ComicDetailContent(comicInfo: ComicInfo) {
                 .fillMaxWidth()
                 .verticalScroll(rememberScrollState())
                 .weight(1f)
-                .padding(horizontal = 8.dp, vertical = 16.dp), verticalArrangement = Arrangement.Top
+                .padding(horizontal = 8.dp, vertical = 16.dp),
+            verticalArrangement = Arrangement.Top
         ) {
             Text(
                 text = comicInfo.comicTitle,
                 style = MaterialTheme.typography.titleLarge
             )
             Divider(modifier = Modifier.padding(vertical = 16.dp))
-            Text(text = comicInfo.header, style = MaterialTheme.typography.titleMedium)
+            Text(
+                text = stringResource(R.string.the_story),
+                style = MaterialTheme.typography.titleMedium
+            )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = comicInfo.description,
@@ -157,7 +364,7 @@ fun ComicDetailContent(comicInfo: ComicInfo) {
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Data provided by Marvel. © 2014 Marvel",
+                text = stringResource(R.string.marvel_attribution_legal),
                 style = MaterialTheme.typography.bodyMedium
             )
         }
@@ -172,12 +379,10 @@ fun ComicDetailContent(comicInfo: ComicInfo) {
                 info = DirectionalButtonInfo(
                     ImagePosition.LEFT,
                     Icons.Filled.KeyboardArrowLeft,
-                    "PREVIOUS"
+                    stringResource(R.string.previous)
                 ),
                 onClick = {
-                    /**
-                     * TODO: Implement event for onPrevious to view model.
-                     */
+                    onPreviousAction(comicId)
                 }
             )
             DirectionalButton(
@@ -186,14 +391,34 @@ fun ComicDetailContent(comicInfo: ComicInfo) {
                 info = DirectionalButtonInfo(
                     ImagePosition.RIGHT,
                     Icons.Filled.KeyboardArrowRight,
-                    "NEXT"
+                    stringResource(R.string.next)
                 ),
                 onClick = {
-                    /**
-                     * TODO: Implement event for onNext to view model.
-                     */
+                    onNextAction(comicId)
                 }
             )
         }
+    }
+}
+
+@Preview(showSystemUi = true)
+@Composable
+private fun ComicInfoDisplayTest() {
+    ComicInfoDisplay(
+        comicDetailUiState = ComicDetailUiState.ComicInfoRetrieved(
+            ComicInfo(
+                "",
+                "Deadpool",
+                "Wade Wilson..."
+            )
+        ),
+        readNowAction = {},
+        comicId = "48700",
+        markAsReadAction = {},
+        readOfflineAction = {},
+        downloadAction = {},
+        onPreviousAction = {}
+    ) {
+
     }
 }

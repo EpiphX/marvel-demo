@@ -2,7 +2,7 @@ package com.chris.marvel.ui.comics
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.chris.marvel.data.ComicsRepository
+import com.chris.marvel.data.comics.ComicsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -19,7 +19,6 @@ sealed class ComicDetailUiState {
 data class ComicInfo(
     val comicBookImageUrl: String?,
     val comicTitle: String,
-    val header: String,
     val description: String
 )
 
@@ -40,7 +39,6 @@ class ComicDetailViewModel @Inject constructor(
                         comicInfo = ComicInfo(
                             comicBookImageUrl = it.thumbnailUrl,
                             comicTitle = it.title,
-                            header = "The Story",
                             description = it.description
                         )
                     )

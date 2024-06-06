@@ -2,10 +2,11 @@
 - Ktor as the library used for http client / network traffic. https://ktor.io/docs/client-create-and-configure.html#close-client
 - Coil as the image loading library. Lightweight, Great support for Kotlin First: https://github.com/coil-kt/coil
 - Hilt for dependency injection https://developer.android.com/training/dependency-injection/hilt-android
+- Room for offline db storage https://developer.android.com/training/data-storage/room
+- The rest of the dependencies are standard dependencies for compose and ui-testing.
 
 ## Application Composition
-The application follows a traditional clean architecture Android application with a UI Module and a Data Module
-(Optionally, if the application grows in size, a Domain Module could be added for use-cases to further simplify view model logic / provide for improved separation of concerns)
+Modules: app, api
 
 ### UI Module
 - Consists of ViewModels, Components, and Screens. All of the app's presentation logic for drawing to screen will live here.

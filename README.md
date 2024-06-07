@@ -50,4 +50,5 @@ Modules: app, api
 - Improve navigation logic.
 - Improve landscape design.
 - Add a paginated comic list, or maybe a search, to make it easier to find comics to display.
-
+- For the detail screen, we could add a swipe gesture to navigate between comics.
+- For the application, it could have a way for the user to clear the local db.
